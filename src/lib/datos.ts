@@ -43,3 +43,10 @@ export const pesos = (n: number | null | undefined) =>
     : new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 0 }).format(n);
 
 export const nombreEmpresa = (e: string) => EMPRESAS[e as Empresa]?.nombre ?? e;
+
+/** Lo que le prometemos a la gente. Cambialo acá y se actualiza en toda la app. */
+export const PLAZO_RESPUESTA = "hasta 5 días hábiles";
+
+/** Facturas en curso que puede tener una persona al mismo tiempo (evita spam). */
+export const MAX_CASOS_ABIERTOS = 5;
+export const ESTADOS_ABIERTOS = ["recibido", "analizando", "analizado", "en_negociacion"];

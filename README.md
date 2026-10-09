@@ -17,7 +17,7 @@ Plataforma para bajar facturas de internet, TV y celular en Argentina (Telecentr
 ## Stack
 
 - Next.js 16 (App Router), Tailwind 4 → Vercel
-- Supabase: Auth (email + contraseña o link mágico), Postgres con RLS, Storage privado para las facturas
+- Supabase: Auth (solo Google), Postgres con RLS, Storage privado para las facturas
 - Opcional: Claude API (`claude-opus-5-5`) para leer las facturas automáticamente
 
 ## Puesta en marcha
@@ -47,6 +47,15 @@ Plataforma para bajar facturas de internet, TV y celular en Argentina (Telecentr
 3. Supabase → Authentication → Providers → **Google** → activalo y pegá el Client ID y Client Secret.
 4. Ejecutá `supabase/migrations/0003_nombre_google.sql` (toma el nombre de la cuenta de Google).
 5. En Google, *Público* → **Publicar la app** para que pueda entrar cualquier persona.
+
+Como el ingreso es solo con Google, en Supabase → Authentication → Sign In / Providers conviene **desactivar
+"Email"** para que nadie pueda crear cuentas con email y contraseña por fuera de la app.
+
+## Ajustes rápidos
+
+En `src/lib/datos.ts`:
+- `PLAZO_RESPUESTA`: lo que se le promete a la gente (hoy "hasta 5 días hábiles").
+- `MAX_CASOS_ABIERTOS`: cuántas facturas en gestión puede tener una persona a la vez (hoy 5).
 
 ## Avisos por email (Resend)
 

@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { EMPRESAS } from "@/lib/datos";
+import { EMPRESAS, PLAZO_RESPUESTA } from "@/lib/datos";
 
 const PASOS = [
   { n: "1", t: "Subís tu factura", d: "Foto o PDF, más tu número de cliente y DNI. Tarda 2 minutos." },
   { n: "2", t: "Hablamos con la empresa", d: "Revisamos tu factura y negociamos con el área de retención en tu nombre." },
-  { n: "3", t: "Te avisamos", d: "Seguís todo desde tu cuenta. Nunca cambiamos tu plan sin tu confirmación." },
+  { n: "3", t: "Te avisamos", d: `En ${PLAZO_RESPUESTA} tenés novedades en tu cuenta. Nunca cambiamos tu plan sin tu confirmación.` },
 ];
 
 export default function Inicio() {

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { z } from "zod";
 import { iaHabilitada } from "@/lib/analisis";
-import { EMPRESAS, nombreEmpresa, pesos, SERVICIOS } from "@/lib/datos";
+import { EMPRESAS, ESTADOS_ABIERTOS, MAX_CASOS_ABIERTOS, nombreEmpresa, pesos, SERVICIOS } from "@/lib/datos";
 import { avisarAdmin, urlBase } from "@/lib/email";
 import { crearClienteAdmin, requerirUsuario } from "@/lib/supabase/server";
 
@@ -30,6 +30,16 @@ export async function crearCaso(datos: z.input<typeof NuevoCaso>): Promise<Resul
   if (!parseado.success) return { ok: false, error: parseado.error.issues[0].message };
   const caso = parseado.data;
   if (!caso.archivo_path.startsWith(`${user.id}/`)) return { ok: false, error: "Archivo inválido" };
+
+  const { count } = await supabase
+    .from("casos")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .in("estado", ESTADOS_ABIERTOS);
+  if ((count ?? 0) >= MAX_CASOS_ABIERTOS) {
+    await supabase.storage.from("facturas").remove([caso.archivo_path]);
+    return { ok: false, error: `Ya tenés ${MAX_CASOS_ABIERTOS} facturas en gestión. Esperá a que terminemos alguna para subir otra.` };
+  }
 
   const { data, error } = await supabase
     .from("casos")

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { iaHabilitada, type Analisis } from "@/lib/analisis";
-import { EMPRESAS, ESTADOS, nombreEmpresa, pesos, SERVICIOS, type Empresa, type Estado, type Servicio } from "@/lib/datos";
+import { EMPRESAS, ESTADOS, PLAZO_RESPUESTA, nombreEmpresa, pesos, SERVICIOS, type Empresa, type Estado, type Servicio } from "@/lib/datos";
 import { obtenerConfig } from "@/lib/config";
 import { requerirUsuario } from "@/lib/supabase/server";
 import { pedirGestion } from "../../acciones";
@@ -107,7 +107,7 @@ export default async function Caso({ params }: PageProps<"/panel/caso/[id]">) {
               <div>
                 <p className="font-semibold">Estamos hablando con {nombreEmpresa(caso.empresa)} por vos</p>
                 <p className="text-sm text-slate-600">
-                  Te vamos a avisar acá{caso.telefono_contacto ? " y por WhatsApp" : ""}. No cambiamos nada de tu plan sin
+                  Te respondemos en {PLAZO_RESPUESTA}, acá{caso.telefono_contacto ? " y por WhatsApp" : ""}. No cambiamos nada de tu plan sin
                   tu confirmación.
                 </p>
               </div>
