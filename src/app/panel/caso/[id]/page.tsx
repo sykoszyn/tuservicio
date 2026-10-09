@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { iaHabilitada, type Analisis } from "@/lib/analisis";
 import { EMPRESAS, ESTADOS, PLAZO_RESPUESTA, nombreEmpresa, pesos, SERVICIOS, type Empresa, type Estado, type Servicio } from "@/lib/datos";
 import { obtenerConfig } from "@/lib/config";
@@ -26,6 +26,8 @@ export default async function Caso({ params }: PageProps<"/panel/caso/[id]">) {
     supabase.from("aportes").select("id").eq("caso_id", id).eq("user_id", user.id),
   ]);
   if (!caso) notFound();
+  // Un admin que abre el caso de otra persona va a la vista de gestión.
+  if (caso.user_id !== user.id) redirect(`/admin/caso/${caso.id}`);
 
   const config = await obtenerConfig();
   const { data: firmado } = await supabase.storage.from("facturas").createSignedUrl(caso.archivo_path, 600);

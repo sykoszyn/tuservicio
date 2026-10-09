@@ -5,10 +5,12 @@ import { requerirUsuario } from "@/lib/supabase/server";
 export const metadata = { title: "Mis facturas — TuServicio" };
 
 export default async function Panel() {
-  const { supabase } = await requerirUsuario();
+  const { supabase, user } = await requerirUsuario();
   const { data: casos } = await supabase
     .from("casos")
     .select("id, empresa, servicio, estado, monto_actual, monto_nuevo, created_at")
+    // Solo las propias: un admin ve las de los demás en /admin.
+    .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
   const ahorroMensual = (casos ?? [])
