@@ -36,7 +36,15 @@ export async function crearCaso(datos: z.input<typeof NuevoCaso>): Promise<Resul
     .insert({ ...caso, user_id: user.id })
     .select("id")
     .single();
-  if (error || !data) return { ok: false, error: "No pudimos guardar el caso. Probá de nuevo." };
+  if (error || !data) {
+    console.error("Error guardando caso:", error);
+    // Borramos el archivo subido para no dejarlo huérfano.
+    await supabase.storage.from("facturas").remove([caso.archivo_path]);
+    return {
+      ok: false,
+      error: `No pudimos guardar el caso. Probá de nuevo.${error ? ` (Detalle: ${error.code} ${error.message})` : ""}`,
+    };
+  }
 
   const admin = crearClienteAdmin();
   await admin.from("eventos_caso").insert({ caso_id: data.id, estado: "recibido", mensaje: "Recibimos tu factura." });
