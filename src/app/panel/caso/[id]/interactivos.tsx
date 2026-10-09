@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { pesos } from "@/lib/datos";
-import { declararAporte, informarResultado } from "../../acciones";
+import { cancelarCaso, declararAporte, informarResultado } from "../../acciones";
 
 /** Dispara el análisis si hace falta y refresca la página mientras corre. */
 export function AutoAnalizar({ id, estado, error }: { id: string; estado: string; error: string | null }) {
@@ -183,6 +183,33 @@ export function AporteVoluntario({
           Ahora no puedo
         </button>
       </div>
+    </div>
+  );
+}
+
+export function BotonCancelar({ id }: { id: string }) {
+  const router = useRouter();
+  const [pendiente, start] = useTransition();
+  const [error, setError] = useState("");
+  return (
+    <div className="text-center">
+      <button
+        type="button"
+        disabled={pendiente}
+        className="text-sm text-slate-400 underline hover:text-slate-600 disabled:opacity-50"
+        onClick={() => {
+          if (!confirm("¿Seguro que querés cancelar la gestión? Vamos a dejar de hablar con la empresa por vos.")) return;
+          setError("");
+          start(async () => {
+            const r = await cancelarCaso(id);
+            if (r.error) setError(r.error);
+            else router.refresh();
+          });
+        }}
+      >
+        {pendiente ? "Cancelando…" : "Cancelar esta gestión"}
+      </button>
+      {error && <p className="mt-2 rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{error}</p>}
     </div>
   );
 }

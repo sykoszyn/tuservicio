@@ -4,8 +4,8 @@ import { iaHabilitada, type Analisis } from "@/lib/analisis";
 import { EMPRESAS, ESTADOS, nombreEmpresa, pesos, SERVICIOS, type Empresa, type Estado, type Servicio } from "@/lib/datos";
 import { obtenerConfig } from "@/lib/config";
 import { requerirUsuario } from "@/lib/supabase/server";
-import { cancelarCaso, pedirGestion } from "../../acciones";
-import { AporteVoluntario, AutoAnalizar, Copiar, FormResultado } from "./interactivos";
+import { pedirGestion } from "../../acciones";
+import { AporteVoluntario, AutoAnalizar, BotonCancelar, Copiar, FormResultado } from "./interactivos";
 
 const TIPO_HALLAZGO: Record<Analisis["hallazgos"][number]["tipo"], string> = {
   aumento: "📈 Aumento",
@@ -194,9 +194,7 @@ export default async function Caso({ params }: PageProps<"/panel/caso/[id]">) {
       )}
 
       {abierto && (
-        <form action={cancelarCaso.bind(null, caso.id)} className="text-center">
-          <button className="text-sm text-slate-400 underline hover:text-slate-600">Cancelar esta gestión</button>
-        </form>
+        <BotonCancelar id={caso.id} />
       )}
     </div>
   );

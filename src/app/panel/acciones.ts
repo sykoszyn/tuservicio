@@ -82,15 +82,28 @@ export async function crearCaso(datos: z.input<typeof NuevoCaso>): Promise<Resul
   return { ok: true, id: data.id };
 }
 
-export async function cancelarCaso(id: string) {
+export async function cancelarCaso(id: string): Promise<{ error?: string }> {
   const { supabase, user } = await requerirUsuario();
-  const { data: caso } = await supabase.from("casos").select("id, estado").eq("id", id).eq("user_id", user.id).single();
-  if (!caso || ["ahorro_conseguido", "sin_ahorro", "cancelado"].includes(caso.estado)) return;
+  const { data: caso, error: errLeer } = await supabase
+    .from("casos")
+    .select("id, estado")
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .single();
+  if (errLeer || !caso) return { error: `No encontramos el caso. ${errLeer?.message ?? ""}` };
+  if (["ahorro_conseguido", "sin_ahorro", "cancelado"].includes(caso.estado))
+    return { error: "Este caso ya está cerrado." };
 
   const admin = crearClienteAdmin();
-  await admin.from("casos").update({ estado: "cancelado" }).eq("id", id);
+  const { error } = await admin.from("casos").update({ estado: "cancelado" }).eq("id", id);
+  if (error) {
+    console.error("Error cancelando caso:", error);
+    return { error: `No se pudo cancelar. (Detalle: ${error.code} ${error.message})` };
+  }
   await admin.from("eventos_caso").insert({ caso_id: id, estado: "cancelado", mensaje: "Cancelaste la gestión." });
   revalidatePath(`/panel/caso/${id}`);
+  revalidatePath("/panel");
+  return {};
 }
 
 export async function pedirGestion(id: string) {
