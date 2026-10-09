@@ -42,7 +42,7 @@ export async function avisarAdmin(asunto: string, lineas: [string, string][], li
     const html = `<div style="font-family:system-ui,sans-serif;font-size:15px;color:#0f172a">
       <h2 style="margin:0 0 12px">${esc(asunto)}</h2>
       <table>${filas}</table>
-      <p style="margin-top:20px"><a href="${esc(link)}" style="background:#059669;color:#fff;padding:10px 18px;border-radius:10px;text-decoration:none;font-weight:600">Abrir en el panel</a></p>
+      ${link ? `<p style="margin-top:20px"><a href="${esc(link)}" style="background:#059669;color:#fff;padding:10px 18px;border-radius:10px;text-decoration:none;font-weight:600">Abrir en el panel</a></p>` : ""}
     </div>`;
     const error = await enviarEmail(email_avisos, asunto, html);
     if (error) console.error("Aviso por email:", error);

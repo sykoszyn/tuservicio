@@ -82,33 +82,78 @@ export async function crearCaso(datos: z.input<typeof NuevoCaso>): Promise<Resul
   return { ok: true, id: data.id };
 }
 
+const ABIERTOS = ["recibido", "analizado", "en_negociacion"];
+
+/** Lee el caso con los permisos del usuario (RLS: el dueño o un admin). */
+async function leerCaso(id: string) {
+  const { supabase } = await requerirUsuario();
+  const { data } = await supabase.from("casos").select("*").eq("id", id).maybeSingle();
+  return data;
+}
+
+/** Borra el caso y su factura (para cuando la persona se equivocó o ya no lo necesita). */
 export async function cancelarCaso(id: string): Promise<{ error?: string }> {
-  const { supabase, user } = await requerirUsuario();
-  const { data: caso, error: errLeer } = await supabase
-    .from("casos")
-    .select("id, estado")
-    .eq("id", id)
-    .eq("user_id", user.id)
-    .single();
-  if (errLeer || !caso) return { error: `No encontramos el caso. ${errLeer?.message ?? ""}` };
-  if (["ahorro_conseguido", "sin_ahorro", "cancelado"].includes(caso.estado))
-    return { error: "Este caso ya está cerrado." };
+  const caso = await leerCaso(id);
+  if (!caso) return { error: "No encontramos el caso." };
+  if (!ABIERTOS.includes(caso.estado)) return { error: "Este caso ya está cerrado y no se puede cancelar." };
 
   const admin = crearClienteAdmin();
-  const { error } = await admin.from("casos").update({ estado: "cancelado" }).eq("id", id);
+  const { error } = await admin.from("casos").delete().eq("id", id);
   if (error) {
     console.error("Error cancelando caso:", error);
-    return { error: `No se pudo cancelar. (Detalle: ${error.code} ${error.message})` };
+    return { error: "No se pudo cancelar. Probá de nuevo en un rato." };
   }
-  await admin.from("eventos_caso").insert({ caso_id: id, estado: "cancelado", mensaje: "Cancelaste la gestión." });
-  revalidatePath(`/panel/caso/${id}`);
+  await admin.storage.from("facturas").remove([caso.archivo_path]);
+
+  after(() =>
+    avisarAdmin(
+      `Cancelado por el usuario: ${nombreEmpresa(caso.empresa)} · ${caso.titular}`,
+      [
+        ["Empresa", nombreEmpresa(caso.empresa)],
+        ["Titular", caso.titular],
+        ["N° cliente", caso.numero_cliente],
+      ],
+      "",
+    ),
+  );
   revalidatePath("/panel");
+  revalidatePath("/admin");
+  return {};
+}
+
+const EdicionCaso = NuevoCaso.pick({
+  empresa: true,
+  servicio: true,
+  numero_cliente: true,
+  dni_titular: true,
+  titular: true,
+  telefono_contacto: true,
+});
+
+export async function editarCaso(id: string, datos: z.input<typeof EdicionCaso>): Promise<{ error?: string }> {
+  const caso = await leerCaso(id);
+  if (!caso) return { error: "No encontramos el caso." };
+  if (!ABIERTOS.includes(caso.estado)) return { error: "Este caso ya está cerrado." };
+  const r = EdicionCaso.safeParse(datos);
+  if (!r.success) return { error: r.error.issues[0].message };
+
+  const admin = crearClienteAdmin();
+  const { error } = await admin
+    .from("casos")
+    .update({ ...r.data, telefono_contacto: r.data.telefono_contacto || null })
+    .eq("id", id);
+  if (error) {
+    console.error("Error editando caso:", error);
+    return { error: "No se pudieron guardar los cambios. Probá de nuevo." };
+  }
+  await admin.from("eventos_caso").insert({ caso_id: id, estado: caso.estado, mensaje: "Corregiste los datos del caso." });
+  revalidatePath(`/panel/caso/${id}`);
+  revalidatePath(`/admin/caso/${id}`);
   return {};
 }
 
 export async function pedirGestion(id: string) {
-  const { supabase, user } = await requerirUsuario();
-  const { data: caso } = await supabase.from("casos").select("id, estado").eq("id", id).eq("user_id", user.id).single();
+  const caso = await leerCaso(id);
   if (!caso || caso.estado !== "analizado") return;
 
   const admin = crearClienteAdmin();
@@ -123,13 +168,7 @@ export async function pedirGestion(id: string) {
 
 /** Resultado cuando la persona negoció sola con el guion. */
 export async function informarResultado(id: string, montoNuevo: number | null) {
-  const { supabase, user } = await requerirUsuario();
-  const { data: caso } = await supabase
-    .from("casos")
-    .select("id, estado, monto_actual")
-    .eq("id", id)
-    .eq("user_id", user.id)
-    .single();
+  const caso = await leerCaso(id);
   if (!caso || !["analizado", "en_negociacion"].includes(caso.estado)) return;
 
   const bajo = montoNuevo != null && montoNuevo > 0 && (caso.monto_actual == null || montoNuevo < caso.monto_actual);

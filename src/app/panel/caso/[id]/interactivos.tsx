@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { pesos } from "@/lib/datos";
-import { cancelarCaso, declararAporte, informarResultado } from "../../acciones";
+import { EMPRESAS, pesos, SERVICIOS, type Empresa, type Servicio } from "@/lib/datos";
+import { cancelarCaso, declararAporte, editarCaso, informarResultado } from "../../acciones";
 
 /** Dispara el análisis si hace falta y refresca la página mientras corre. */
 export function AutoAnalizar({ id, estado, error }: { id: string; estado: string; error: string | null }) {
@@ -187,29 +187,151 @@ export function AporteVoluntario({
   );
 }
 
-export function BotonCancelar({ id }: { id: string }) {
+type DatosCaso = {
+  id: string;
+  empresa: Empresa;
+  servicio: Servicio;
+  numero_cliente: string;
+  dni_titular: string;
+  titular: string;
+  telefono_contacto: string | null;
+};
+
+/** Corregir datos o cancelar y borrar el caso. */
+export function AccionesCaso({ caso }: { caso: DatosCaso }) {
   const router = useRouter();
-  const [pendiente, start] = useTransition();
+  const [modo, setModo] = useState<"" | "editar" | "cancelar">("");
+  const [empresa, setEmpresa] = useState<Empresa>(caso.empresa);
   const [error, setError] = useState("");
+  const [pendiente, start] = useTransition();
+
+  function cerrar() {
+    setModo("");
+    setError("");
+  }
+
   return (
-    <div className="text-center">
-      <button
-        type="button"
-        disabled={pendiente}
-        className="text-sm text-slate-400 underline hover:text-slate-600 disabled:opacity-50"
-        onClick={() => {
-          if (!confirm("¿Seguro que querés cancelar la gestión? Vamos a dejar de hablar con la empresa por vos.")) return;
-          setError("");
-          start(async () => {
-            const r = await cancelarCaso(id);
-            if (r.error) setError(r.error);
-            else router.refresh();
-          });
-        }}
-      >
-        {pendiente ? "Cancelando…" : "Cancelar esta gestión"}
-      </button>
-      {error && <p className="mt-2 rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{error}</p>}
-    </div>
+    <section className="tarjeta">
+      {modo !== "editar" ? (
+        <>
+          <p className="font-semibold">¿Te equivocaste en algo?</p>
+          <p className="mb-4 text-sm text-slate-500">Podés corregir los datos o cancelar el pedido. Es gratis y no afecta tu servicio.</p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <button type="button" className="btn-secundario" onClick={() => setModo("editar")}>
+              ✏️ Corregir datos
+            </button>
+            <button
+              type="button"
+              className="btn border border-rose-200 bg-white text-rose-700 hover:bg-rose-50"
+              onClick={() => setModo("cancelar")}
+            >
+              🗑️ Cancelar pedido
+            </button>
+          </div>
+        </>
+      ) : (
+        <form
+          className="space-y-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            const f = new FormData(e.currentTarget);
+            setError("");
+            start(async () => {
+              const r = await editarCaso(caso.id, {
+                empresa,
+                servicio: String(f.get("servicio")) as Servicio,
+                numero_cliente: String(f.get("numero_cliente")),
+                dni_titular: String(f.get("dni_titular")),
+                titular: String(f.get("titular")),
+                telefono_contacto: String(f.get("telefono_contacto") ?? ""),
+              });
+              if (r.error) return setError(r.error);
+              cerrar();
+              router.refresh();
+            });
+          }}
+        >
+          <p className="font-semibold">Corregir datos</p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label className="label" htmlFor="e-empresa">Empresa</label>
+              <select id="e-empresa" className="input" value={empresa} onChange={(e) => setEmpresa(e.target.value as Empresa)}>
+                {(Object.keys(EMPRESAS) as Empresa[]).map((k) => (
+                  <option key={k} value={k}>{EMPRESAS[k].nombre}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="label" htmlFor="e-servicio">Servicio</label>
+              <select key={empresa} id="e-servicio" name="servicio" className="input" defaultValue={caso.servicio}>
+                {EMPRESAS[empresa].servicios.map((sv) => (
+                  <option key={sv} value={sv}>{SERVICIOS[sv]}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="label" htmlFor="e-numero">Número de cliente</label>
+            <input id="e-numero" name="numero_cliente" className="input" defaultValue={caso.numero_cliente} maxLength={40} required />
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label className="label" htmlFor="e-dni">DNI del titular</label>
+              <input id="e-dni" name="dni_titular" className="input" inputMode="numeric" defaultValue={caso.dni_titular} required />
+            </div>
+            <div>
+              <label className="label" htmlFor="e-titular">Nombre del titular</label>
+              <input id="e-titular" name="titular" className="input" defaultValue={caso.titular} required />
+            </div>
+          </div>
+          <div>
+            <label className="label" htmlFor="e-tel">WhatsApp</label>
+            <input id="e-tel" name="telefono_contacto" className="input" inputMode="tel" defaultValue={caso.telefono_contacto ?? ""} />
+          </div>
+          {error && <p className="rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{error}</p>}
+          <div className="grid gap-2 sm:grid-cols-2">
+            <button type="button" className="btn-secundario" onClick={cerrar} disabled={pendiente}>Volver</button>
+            <button className="btn-primario" disabled={pendiente}>{pendiente ? "Guardando…" : "Guardar cambios"}</button>
+          </div>
+          <p className="text-xs text-slate-500">¿Subiste otra factura por error? Cancelá el pedido y cargalo de nuevo.</p>
+        </form>
+      )}
+
+      {modo === "cancelar" && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50 p-4 sm:items-center"
+          onClick={() => !pendiente && cerrar()}
+        >
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-rose-100 text-2xl">🗑️</div>
+            <h3 className="text-center text-lg font-bold">¿Cancelar este pedido?</h3>
+            <p className="mt-1 text-center text-sm text-slate-600">
+              Vamos a borrar la factura y los datos que cargaste. Si querés, después podés subirla de nuevo.
+            </p>
+            {error && <p className="mt-3 rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{error}</p>}
+            <div className="mt-5 grid gap-2">
+              <button
+                type="button"
+                className="btn bg-rose-600 text-white hover:bg-rose-700"
+                disabled={pendiente}
+                onClick={() =>
+                  start(async () => {
+                    const r = await cancelarCaso(caso.id);
+                    if (r.error) return setError(r.error);
+                    router.push("/panel");
+                    router.refresh();
+                  })
+                }
+              >
+                {pendiente ? "Cancelando…" : "Sí, cancelar y borrar"}
+              </button>
+              <button type="button" className="btn-secundario" onClick={cerrar} disabled={pendiente}>
+                No, volver
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }

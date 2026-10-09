@@ -5,7 +5,7 @@ import { EMPRESAS, ESTADOS, nombreEmpresa, pesos, SERVICIOS, type Empresa, type 
 import { obtenerConfig } from "@/lib/config";
 import { requerirUsuario } from "@/lib/supabase/server";
 import { pedirGestion } from "../../acciones";
-import { AporteVoluntario, AutoAnalizar, BotonCancelar, Copiar, FormResultado } from "./interactivos";
+import { AccionesCaso, AporteVoluntario, AutoAnalizar, Copiar, FormResultado } from "./interactivos";
 
 const TIPO_HALLAZGO: Record<Analisis["hallazgos"][number]["tipo"], string> = {
   aumento: "📈 Aumento",
@@ -193,8 +193,18 @@ export default async function Caso({ params }: PageProps<"/panel/caso/[id]">) {
         </section>
       )}
 
-      {abierto && (
-        <BotonCancelar id={caso.id} />
+      {["recibido", "analizado", "en_negociacion"].includes(caso.estado) && (
+        <AccionesCaso
+          caso={{
+            id: caso.id,
+            empresa: caso.empresa,
+            servicio: caso.servicio,
+            numero_cliente: caso.numero_cliente,
+            dni_titular: caso.dni_titular,
+            titular: caso.titular,
+            telefono_contacto: caso.telefono_contacto,
+          }}
+        />
       )}
     </div>
   );
