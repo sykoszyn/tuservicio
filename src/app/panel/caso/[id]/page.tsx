@@ -29,8 +29,10 @@ export default async function Caso({ params }: PageProps<"/panel/caso/[id]">) {
   // Un admin que abre el caso de otra persona va a la vista de gestión.
   if (caso.user_id !== user.id) redirect(`/admin/caso/${caso.id}`);
 
-  const config = await obtenerConfig();
-  const { data: firmado } = await supabase.storage.from("facturas").createSignedUrl(caso.archivo_path, 600);
+  const [config, { data: firmado }] = await Promise.all([
+    caso.estado === "ahorro_conseguido" ? obtenerConfig() : null,
+    supabase.storage.from("facturas").createSignedUrl(caso.archivo_path, 600),
+  ]);
   const estado = ESTADOS[caso.estado as Estado];
   const analisis = caso.analisis as Analisis | null;
   const ahorro = caso.monto_actual && caso.monto_nuevo ? caso.monto_actual - caso.monto_nuevo : 0;
@@ -78,7 +80,7 @@ export default async function Caso({ params }: PageProps<"/panel/caso/[id]">) {
         </div>
       )}
 
-      {caso.estado === "ahorro_conseguido" && ahorro > 0 && (config.mp_alias || config.mp_link) && (
+      {caso.estado === "ahorro_conseguido" && ahorro > 0 && config && (config.mp_alias || config.mp_link) && (
         <section className="tarjeta">
           <h2 className="mb-2 text-lg font-bold">¿Querés bancar el proyecto?</h2>
           <AporteVoluntario

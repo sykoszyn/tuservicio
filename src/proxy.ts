@@ -21,17 +21,18 @@ export async function proxy(request: NextRequest) {
     },
   );
 
-  // Refresca el token si venció. No poner código entre createServerClient y getUser.
-  const { data } = await supabase.auth.getUser();
+  // Refresca el token si venció y lo verifica. No poner código entre createServerClient y getClaims.
+  const { data } = await supabase.auth.getClaims();
+  const logueado = !!data?.claims?.sub;
 
   const { pathname } = request.nextUrl;
-  if (!data.user && RUTAS_PRIVADAS.some((r) => pathname.startsWith(r))) {
+  if (!logueado && RUTAS_PRIVADAS.some((r) => pathname.startsWith(r))) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("volver", pathname);
     return NextResponse.redirect(url);
   }
-  if (data.user && pathname === "/login") {
+  if (logueado && pathname === "/login") {
     const url = request.nextUrl.clone();
     url.pathname = "/panel";
     url.search = "";

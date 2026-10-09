@@ -3,7 +3,7 @@ import Link from "next/link";
 import "./globals.css";
 import MenuUsuario from "@/components/menu-usuario";
 import { ES_BETA } from "@/lib/datos";
-import { crearClienteServidor } from "@/lib/supabase/server";
+import { obtenerPerfil, obtenerUsuario } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "TuServicio — Bajá tu factura gratis",
@@ -14,11 +14,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = { themeColor: "#059669" };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await crearClienteServidor();
-  const { data } = await supabase.auth.getUser();
-  const { data: perfil } = data.user
-    ? await supabase.from("perfiles").select("nombre, es_admin").eq("id", data.user.id).maybeSingle()
-    : { data: null };
+  const usuario = await obtenerUsuario();
+  const perfil = usuario ? await obtenerPerfil(usuario.id) : null;
 
   return (
     <html lang="es-AR">
@@ -35,12 +32,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 </span>
               )}
             </Link>
-            {data.user ? (
+            {usuario ? (
               <MenuUsuario
-                email={data.user.email ?? ""}
+                email={usuario.email ?? ""}
                 nombre={perfil?.nombre ?? null}
                 esAdmin={!!perfil?.es_admin}
-                foto={(data.user.user_metadata?.avatar_url as string | undefined) ?? null}
+                foto={(usuario.user_metadata.avatar_url as string | undefined) ?? null}
               />
             ) : (
               <Link href="/login" className="text-sm font-medium hover:text-emerald-700">

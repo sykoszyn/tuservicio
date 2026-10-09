@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { pesos } from "@/lib/datos";
-import { requerirUsuario } from "@/lib/supabase/server";
+import { obtenerPerfil, requerirUsuario } from "@/lib/supabase/server";
 import FormPerfil from "./form-perfil";
 
 export const metadata = { title: "Mi perfil — TuServicio" };
@@ -9,18 +9,20 @@ const PROVEEDOR: Record<string, string> = { google: "Google", email: "Email y co
 
 export default async function MiPerfil() {
   const { supabase, user } = await requerirUsuario();
-  const [{ data: perfil }, { data: casos }] = await Promise.all([
-    supabase.from("perfiles").select("nombre, dni, telefono, es_admin").eq("id", user.id).maybeSingle(),
+  const [perfil, { data: casos }] = await Promise.all([
+    obtenerPerfil(user.id),
     supabase.from("casos").select("estado, monto_actual, monto_nuevo").eq("user_id", user.id),
   ]);
 
-  const proveedores = ((user.app_metadata?.providers as string[] | undefined) ?? [user.app_metadata?.provider ?? "email"])
+  const proveedores = (
+    (user.app_metadata.providers as string[] | undefined) ?? [(user.app_metadata.provider as string | undefined) ?? "email"]
+  )
     .map((p) => PROVEEDOR[p] ?? p)
     .join(" · ");
   const ahorro = (casos ?? [])
     .filter((c) => c.estado === "ahorro_conseguido" && c.monto_actual && c.monto_nuevo)
     .reduce((s, c) => s + (c.monto_actual - c.monto_nuevo), 0);
-  const foto = user.user_metadata?.avatar_url as string | undefined;
+  const foto = user.user_metadata.avatar_url as string | undefined;
   const nombre = perfil?.nombre || user.email;
 
   return (

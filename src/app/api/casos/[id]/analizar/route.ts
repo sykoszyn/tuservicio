@@ -2,7 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { analizarFactura, iaHabilitada } from "@/lib/analisis";
 import { nombreEmpresa, SERVICIOS, type Servicio } from "@/lib/datos";
-import { crearClienteAdmin, crearClienteServidor } from "@/lib/supabase/server";
+import { crearClienteAdmin, crearClienteServidor, obtenerUsuario } from "@/lib/supabase/server";
 
 export const maxDuration = 120;
 
@@ -20,8 +20,7 @@ export async function POST(_req: Request, ctx: RouteContext<"/api/casos/[id]/ana
 
   // Con el cliente del usuario: RLS garantiza que el caso sea suyo.
   const supabase = await crearClienteServidor();
-  const { data: auth } = await supabase.auth.getUser();
-  if (!auth.user) return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+  if (!(await obtenerUsuario())) return NextResponse.json({ error: "No autenticado" }, { status: 401 });
 
   const { data: caso } = await supabase.from("casos").select("*").eq("id", id).single();
   if (!caso) return NextResponse.json({ error: "Caso no encontrado" }, { status: 404 });
