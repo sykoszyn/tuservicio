@@ -1,7 +1,6 @@
 import Link from "next/link";
 import AvisoBeta from "@/components/aviso-beta";
-import { CONTADOR_MINIMO, EMPRESAS, PLAZO_RESPUESTA, pesos } from "@/lib/datos";
-import { obtenerEstadisticas } from "@/lib/estadisticas";
+import { EMPRESAS, PLAZO_RESPUESTA } from "@/lib/datos";
 
 const PASOS = [
   { n: "1", t: "Subís tu factura", d: "Foto o PDF, más tu número de cliente y DNI. Tarda 2 minutos." },
@@ -9,17 +8,7 @@ const PASOS = [
   { n: "3", t: "Te avisamos", d: `En ${PLAZO_RESPUESTA} tenés novedades en tu cuenta. Nunca cambiamos tu plan sin tu confirmación.` },
 ];
 
-const numero = (n: number) =>
-  new Intl.NumberFormat("es-AR", n >= 10000 ? { notation: "compact", maximumFractionDigits: 1 } : {}).format(n);
-const plata = (n: number) =>
-  n >= 100000
-    ? new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", notation: "compact", maximumFractionDigits: 1 }).format(n)
-    : pesos(n);
-
-export default async function Inicio() {
-  const stats = await obtenerEstadisticas().catch(() => null);
-  const mostrarStats = stats && stats.personas >= CONTADOR_MINIMO && stats.personas > 0;
-
+export default function Inicio() {
   return (
     <div className="space-y-12">
       <section className="pt-6 text-center">
@@ -49,25 +38,6 @@ export default async function Inicio() {
             ))}
         </div>
       </section>
-
-      {mostrarStats && (
-        <section className={`grid gap-3 ${stats.ahorroMensual > 0 ? "grid-cols-3" : "grid-cols-2"}`}>
-          <div className="tarjeta px-2 text-center sm:px-5">
-            <p className="whitespace-nowrap text-2xl font-extrabold text-emerald-700 sm:text-4xl">{numero(stats.personas)}</p>
-            <p className="text-sm text-slate-600">{stats.personas === 1 ? "persona registrada" : "personas registradas"}</p>
-          </div>
-          <div className="tarjeta px-2 text-center sm:px-5">
-            <p className="whitespace-nowrap text-2xl font-extrabold text-emerald-700 sm:text-4xl">{numero(stats.facturas)}</p>
-            <p className="text-sm text-slate-600">{stats.facturas === 1 ? "factura recibida" : "facturas recibidas"}</p>
-          </div>
-          {stats.ahorroMensual > 0 && (
-            <div className="tarjeta px-2 text-center sm:px-5">
-              <p className="whitespace-nowrap text-2xl font-extrabold text-emerald-700 sm:text-4xl">{plata(stats.ahorroMensual)}</p>
-              <p className="text-sm text-slate-600">ahorrados por mes</p>
-            </div>
-          )}
-        </section>
-      )}
 
       <AvisoBeta />
 

@@ -53,6 +53,3 @@ export const ESTADOS_ABIERTOS = ["recibido", "analizando", "analizado", "en_nego
 
 /** Muestra la etiqueta y los avisos de versión beta. Ponelo en false cuando salgas de beta. */
 export const ES_BETA = true;
-
-/** El contador del inicio aparece recién cuando hay al menos esta cantidad de personas registradas. */
-export const CONTADOR_MINIMO = 0;
