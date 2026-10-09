@@ -4,6 +4,7 @@ import type { Analisis } from "@/lib/analisis";
 import { ESTADOS, nombreEmpresa, pesos, SERVICIOS, type Estado, type Servicio } from "@/lib/datos";
 import { requerirAdmin } from "@/lib/supabase/server";
 import { actualizarCaso, confirmarAporte } from "../../acciones";
+import CancelarAdmin from "./cancelar-admin";
 
 export default async function AdminCaso({ params, searchParams }: PageProps<"/admin/caso/[id]">) {
   const { id } = await params;
@@ -153,6 +154,7 @@ Antes quería saber qué promoción o plan más económico me pueden ofrecer par
           </ul>
         </section>
       </div>
+      <CancelarAdmin id={caso.id} cancelado={caso.estado === "cancelado"} />
     </div>
   );
 }

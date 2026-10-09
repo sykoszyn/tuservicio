@@ -4,7 +4,7 @@ import { requerirAdmin } from "@/lib/supabase/server";
 
 export const metadata = { title: "Admin — TuServicio" };
 
-const FILTROS: (Estado | "todos")[] = ["en_negociacion", "analizado", "recibido", "ahorro_conseguido", "sin_ahorro", "todos"];
+const FILTROS: (Estado | "todos")[] = ["en_negociacion", "analizado", "recibido", "ahorro_conseguido", "sin_ahorro", "cancelado", "todos"];
 
 export default async function Admin({ searchParams }: PageProps<"/admin">) {
   const { supabase } = await requerirAdmin();

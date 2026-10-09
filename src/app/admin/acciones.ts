@@ -6,7 +6,7 @@ import { z } from "zod";
 import { ESTADOS, type Estado } from "@/lib/datos";
 import { obtenerConfig } from "@/lib/config";
 import { enviarEmail } from "@/lib/email";
-import { requerirAdmin } from "@/lib/supabase/server";
+import { crearClienteAdmin, requerirAdmin } from "@/lib/supabase/server";
 
 const monto = z.preprocess(
   (v) => (v === "" || v == null ? null : Number(String(v).replace(/\./g, "").replace(",", "."))),
@@ -84,4 +84,37 @@ export async function probarEmail(_prev: EstadoForm): Promise<EstadoForm> {
     "<p>¡Funciona! Vas a recibir un email como este cada vez que alguien suba una factura.</p>",
   );
   return error ? { error } : { ok: `Email de prueba enviado a ${email_avisos}. Revisá también spam.` };
+}
+
+/** Cancela el caso y le deja el motivo al usuario (el caso queda visible como "Cancelado"). */
+export async function cancelarCasoAdmin(id: string, motivo: string): Promise<{ error?: string }> {
+  const { supabase } = await requerirAdmin();
+  const texto = motivo.trim().slice(0, 500);
+  const { error } = await supabase
+    .from("casos")
+    .update({ estado: "cancelado", ...(texto ? { mensaje_operador: texto } : {}) })
+    .eq("id", id);
+  if (error) return { error: `No se pudo cancelar: ${error.message}` };
+  await supabase.from("eventos_caso").insert({
+    caso_id: id,
+    estado: "cancelado",
+    mensaje: texto ? `Cancelamos la gestión: ${texto}` : "Cancelamos la gestión.",
+  });
+  revalidatePath("/admin");
+  revalidatePath(`/admin/caso/${id}`);
+  revalidatePath(`/panel/caso/${id}`);
+  return {};
+}
+
+/** Borra el caso y la factura para siempre (pruebas, spam, duplicados). */
+export async function borrarCasoAdmin(id: string): Promise<{ error?: string }> {
+  const { supabase } = await requerirAdmin();
+  const { data: caso } = await supabase.from("casos").select("archivo_path").eq("id", id).maybeSingle();
+  if (!caso) return { error: "No encontramos el caso." };
+  const admin = crearClienteAdmin();
+  const { error } = await admin.from("casos").delete().eq("id", id);
+  if (error) return { error: `No se pudo borrar: ${error.message}` };
+  await admin.storage.from("facturas").remove([caso.archivo_path]);
+  revalidatePath("/admin");
+  return {};
 }
