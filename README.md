@@ -38,6 +38,16 @@ Plataforma para bajar facturas de internet, TV y celular en Argentina (Telecentr
 6. **Configuración** (`/admin/configuracion`): tu email para avisos y el alias/CVU para aportes.
    Ejecutá antes `supabase/migrations/0002_configuracion.sql`.
 
+## Login con Google
+
+1. Google Cloud Console → proyecto nuevo → *Google Auth Platform* (pantalla de consentimiento): tipo **Externo**,
+   nombre de la app, email de soporte, y en dominios autorizados `supabase.co` y `vercel.app`.
+2. *Clientes → Crear cliente* → **Aplicación web**. En *URIs de redireccionamiento autorizados* pegá
+   `https://TU-PROYECTO.supabase.co/auth/v1/callback` (está en Supabase → Authentication → Providers → Google).
+3. Supabase → Authentication → Providers → **Google** → activalo y pegá el Client ID y Client Secret.
+4. Ejecutá `supabase/migrations/0003_nombre_google.sql` (toma el nombre de la cuenta de Google).
+5. En Google, *Público* → **Publicar la app** para que pueda entrar cualquier persona.
+
 ## Avisos por email (Resend)
 
 1. Creá una cuenta gratis en https://resend.com **con el mismo email donde querés recibir los avisos**.
