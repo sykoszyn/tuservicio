@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import "./globals.css";
 import MenuUsuario from "@/components/menu-usuario";
+import { ES_BETA } from "@/lib/datos";
 import { crearClienteServidor } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
@@ -24,8 +25,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="min-h-dvh">
         <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 backdrop-blur">
           <nav className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
-            <Link href="/" className="text-lg font-bold">
-              Tu<span className="text-emerald-600">Servicio</span>
+            <Link href="/" className="flex items-center gap-2 text-lg font-bold">
+              <span>
+                Tu<span className="text-emerald-600">Servicio</span>
+              </span>
+              {ES_BETA && (
+                <span className="rounded-md bg-violet-100 px-1.5 py-0.5 text-[10px] font-bold tracking-wider text-violet-700">
+                  BETA
+                </span>
+              )}
             </Link>
             {data.user ? (
               <MenuUsuario

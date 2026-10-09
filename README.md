@@ -56,6 +56,7 @@ Como el ingreso es solo con Google, en Supabase → Authentication → Sign In /
 En `src/lib/datos.ts`:
 - `PLAZO_RESPUESTA`: lo que se le promete a la gente (hoy "hasta 5 días hábiles").
 - `MAX_CASOS_ABIERTOS`: cuántas facturas en gestión puede tener una persona a la vez (hoy 5).
+- `ES_BETA`: muestra la etiqueta BETA y el aviso de demoras. Ponelo en `false` al salir de beta.
 
 ## Avisos por email (Resend)
 

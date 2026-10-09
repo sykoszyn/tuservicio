@@ -50,3 +50,6 @@ export const PLAZO_RESPUESTA = "hasta 5 días hábiles";
 /** Facturas en curso que puede tener una persona al mismo tiempo (evita spam). */
 export const MAX_CASOS_ABIERTOS = 5;
 export const ESTADOS_ABIERTOS = ["recibido", "analizando", "analizado", "en_negociacion"];
+
+/** Muestra la etiqueta y los avisos de versión beta. Ponelo en false cuando salgas de beta. */
+export const ES_BETA = true;

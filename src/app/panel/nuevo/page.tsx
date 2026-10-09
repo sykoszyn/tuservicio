@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ESTADOS_ABIERTOS, MAX_CASOS_ABIERTOS, PLAZO_RESPUESTA } from "@/lib/datos";
 import { requerirUsuario } from "@/lib/supabase/server";
+import AvisoBeta from "@/components/aviso-beta";
 import FormNuevo from "./form-nuevo";
 
 export const metadata = { title: "Subir factura — TuServicio" };
@@ -30,6 +31,9 @@ export default async function Nuevo() {
       <p className="mb-6 text-slate-600">
         Tarda 2 minutos. Gratis, siempre. Te respondemos en {PLAZO_RESPUESTA}.
       </p>
+      <div className="mb-6">
+        <AvisoBeta />
+      </div>
       <FormNuevo userId={user.id} perfil={perfil ?? { nombre: null, dni: null, telefono: null }} />
     </div>
   );

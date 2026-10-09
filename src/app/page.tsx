@@ -1,4 +1,5 @@
 import Link from "next/link";
+import AvisoBeta from "@/components/aviso-beta";
 import { EMPRESAS, PLAZO_RESPUESTA } from "@/lib/datos";
 
 const PASOS = [
@@ -37,6 +38,8 @@ export default function Inicio() {
             ))}
         </div>
       </section>
+
+      <AvisoBeta />
 
       <section className="grid gap-4 sm:grid-cols-3">
         {PASOS.map((p) => (
