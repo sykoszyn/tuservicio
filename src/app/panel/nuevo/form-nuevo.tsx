@@ -182,7 +182,7 @@ export default function FormNuevo({ userId, perfil }: { userId: string; perfil: 
           onChange={(e) => elegirArchivo(e.target.files?.[0])}
         />
         <label className="flex items-start gap-3 rounded-xl bg-slate-50 p-3 text-sm">
-          <input type="checkbox" name="autoriza_gestion" className="mt-1 h-4 w-4 accent-emerald-600" />
+          <input type="checkbox" name="autoriza_gestion" required className="mt-1 h-4 w-4 accent-emerald-600" />
           <span>
             Autorizo a TuServicio a contactar a la empresa en mi nombre para pedir una rebaja. Nunca vamos a dar de baja
             ni cambiar tu plan sin tu confirmación.

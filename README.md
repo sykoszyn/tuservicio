@@ -6,9 +6,11 @@ Plataforma para bajar facturas de internet, TV y celular en Argentina (Telecentr
 ## Cómo funciona
 
 1. La persona crea su cuenta y sube la factura (foto o PDF) con número de cliente, DNI y titular.
-2. Claude lee la factura: monto, plan, promos vencidas, aumentos y cargos extra, y arma un ahorro estimado
-   y un guion para hablar con el área de retención.
-3. Dos caminos: **"Gestionalo por mí"** (autoriza a que el equipo contacte a la empresa) o **"Hacelo vos"** con el guion.
+2. La factura entra directo a la cola de `/admin` como "Negociando". Ahí ves la foto o el PDF, el número de cliente,
+   el DNI, el WhatsApp y un guion para el área de retención, y hablás con la empresa.
+3. Cargás el monto nuevo y un mensaje; la persona lo ve en su cuenta.
+   *(Opcional: con `ANTHROPIC_API_KEY`, Claude lee la factura antes, detecta promos vencidas y cargos extra, y le da
+   a la persona un guion para hacerlo sola.)*
 4. Se registra el monto nuevo y se muestra el ahorro mensual/anual.
 5. Solo si hubo ahorro aparece un bloque de aporte voluntario (Mercado Pago o alias), con el botón "Ahora no puedo" al mismo nivel.
 
@@ -16,7 +18,7 @@ Plataforma para bajar facturas de internet, TV y celular en Argentina (Telecentr
 
 - Next.js 16 (App Router), Tailwind 4 → Vercel
 - Supabase: Auth (email + contraseña o link mágico), Postgres con RLS, Storage privado para las facturas
-- Claude API (`claude-opus-5-5`, salida estructurada) para leer las facturas
+- Opcional: Claude API (`claude-opus-5-5`) para leer las facturas automáticamente
 
 ## Puesta en marcha
 

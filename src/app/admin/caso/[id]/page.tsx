@@ -20,6 +20,13 @@ export default async function AdminCaso({ params, searchParams }: PageProps<"/ad
   const { data: firmado } = await supabase.storage.from("facturas").createSignedUrl(caso.archivo_path, 600);
   const analisis = caso.analisis as Analisis | null;
   const whatsapp = caso.telefono_contacto?.replace(/\D/g, "");
+  const esPdf = caso.archivo_path.endsWith(".pdf");
+  const guion =
+    analisis?.guion ??
+    `Hola, mi nombre es ${caso.titular}, DNI ${caso.dni_titular}, número de cliente ${caso.numero_cliente}.
+Llamo porque la factura de ${SERVICIOS[caso.servicio as Servicio].toLowerCase()} subió mucho${caso.monto_actual ? ` (hoy pago ${pesos(caso.monto_actual)})` : ""} y estoy evaluando darme de baja o pasarme a otra empresa.
+Antes quería saber qué promoción o plan más económico me pueden ofrecer para quedarme.
+¿Me pasás el número de gestión y me confirmás la nueva tarifa por escrito (mail o SMS)?`;
 
   return (
     <div className="space-y-5">
@@ -80,6 +87,23 @@ export default async function AdminCaso({ params, searchParams }: PageProps<"/ad
         </form>
       </div>
 
+      {firmado?.signedUrl && (
+        <section className="tarjeta">
+          <h2 className="mb-2 font-semibold">Factura</h2>
+          {esPdf ? (
+            <iframe src={firmado.signedUrl} className="h-[70vh] w-full rounded-xl border" title="Factura" />
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={firmado.signedUrl} alt="Factura" className="mx-auto max-h-[80vh] rounded-xl border" />
+          )}
+        </section>
+      )}
+
+      <section className="tarjeta text-sm">
+        <h2 className="mb-2 font-semibold">Guion para retención</h2>
+        <p className="whitespace-pre-line rounded-xl bg-slate-50 p-3">{guion}</p>
+      </section>
+
       {analisis && (
         <section className="tarjeta space-y-3 text-sm">
           <h2 className="text-lg font-bold">Análisis</h2>
@@ -95,7 +119,6 @@ export default async function AdminCaso({ params, searchParams }: PageProps<"/ad
           <ul className="list-disc pl-5 text-slate-600">
             {analisis.conceptos.map((c, i) => <li key={i}>{c.descripcion}: {pesos(c.monto)}</li>)}
           </ul>
-          <p className="whitespace-pre-line rounded-xl bg-slate-50 p-3">{analisis.guion}</p>
         </section>
       )}
 

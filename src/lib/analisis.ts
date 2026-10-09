@@ -28,6 +28,9 @@ export const AnalisisSchema = z.object({
 
 export type Analisis = z.infer<typeof AnalisisSchema>;
 
+/** Sin ANTHROPIC_API_KEY no se analiza con IA: las facturas pasan directo a gestión manual. */
+export const iaHabilitada = () => !!process.env.ANTHROPIC_API_KEY;
+
 const SISTEMA = `Sos un analista de facturas de servicios (internet, TV, celular, telefonía) en Argentina. Ayudás a personas con poca plata a pagar menos, gratis.
 
 Tu tarea con la factura adjunta:

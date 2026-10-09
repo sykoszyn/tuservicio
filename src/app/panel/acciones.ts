@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { iaHabilitada } from "@/lib/analisis";
 import { EMPRESAS } from "@/lib/datos";
 import { crearClienteAdmin, requerirUsuario } from "@/lib/supabase/server";
 
@@ -16,7 +17,7 @@ const NuevoCaso = z.object({
   titular: z.string().trim().min(2, "Falta el nombre del titular").max(120),
   telefono_contacto: z.string().trim().max(30).optional(),
   archivo_path: z.string().min(1),
-  autoriza_gestion: z.boolean(),
+  autoriza_gestion: z.boolean().refine((v) => v, "Necesitamos tu autorización para hablar con la empresa"),
 });
 
 export type ResultadoCrear = { ok: true; id: string } | { ok: false; error: string };
@@ -37,6 +38,15 @@ export async function crearCaso(datos: z.input<typeof NuevoCaso>): Promise<Resul
 
   const admin = crearClienteAdmin();
   await admin.from("eventos_caso").insert({ caso_id: data.id, estado: "recibido", mensaje: "Recibimos tu factura." });
+  if (!iaHabilitada()) {
+    // Sin análisis automático: pasa directo a la cola de gestión del equipo.
+    await admin.from("casos").update({ estado: "en_negociacion" }).eq("id", data.id);
+    await admin.from("eventos_caso").insert({
+      caso_id: data.id,
+      estado: "en_negociacion",
+      mensaje: "Vamos a hablar con la empresa por vos. Te avisamos acá cuando tengamos novedades.",
+    });
+  }
   // Guardamos DNI/teléfono en el perfil para autocompletar la próxima vez.
   await supabase
     .from("perfiles")

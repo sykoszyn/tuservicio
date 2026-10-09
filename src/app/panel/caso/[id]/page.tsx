@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import type { Analisis } from "@/lib/analisis";
+import { iaHabilitada, type Analisis } from "@/lib/analisis";
 import { EMPRESAS, ESTADOS, nombreEmpresa, pesos, SERVICIOS, type Empresa, type Estado, type Servicio } from "@/lib/datos";
 import { requerirUsuario } from "@/lib/supabase/server";
 import { cancelarCaso, pedirGestion } from "../../acciones";
@@ -55,7 +55,7 @@ export default async function Caso({ params }: PageProps<"/panel/caso/[id]">) {
         <span className={`rounded-full px-3 py-1 text-sm font-semibold ${estado.color}`}>{estado.texto}</span>
       </div>
 
-      <AutoAnalizar id={caso.id} estado={caso.estado} error={caso.error_analisis} />
+      {iaHabilitada() && <AutoAnalizar id={caso.id} estado={caso.estado} error={caso.error_analisis} />}
 
       {caso.mensaje_operador && (
         <div className="tarjeta border-amber-200 bg-amber-50">
@@ -84,6 +84,32 @@ export default async function Caso({ params }: PageProps<"/panel/caso/[id]">) {
             mpAlias={process.env.NEXT_PUBLIC_MP_ALIAS}
             yaAporto={!!aportes?.length}
           />
+        </section>
+      )}
+
+      {abierto && (
+        <section className="tarjeta space-y-3">
+          {caso.estado === "analizado" && (
+            <form action={pedirGestion.bind(null, caso.id)}>
+              <button className="btn-primario w-full">Gestionalo por mí (gratis)</button>
+              <p className="mt-1 text-center text-xs text-slate-500">
+                Contactamos a {nombreEmpresa(caso.empresa)} en tu nombre. Te avisamos antes de aceptar cualquier cambio.
+              </p>
+            </form>
+          )}
+          {caso.estado === "en_negociacion" && (
+            <div className="flex items-start gap-3">
+              <span className="text-2xl">📞</span>
+              <div>
+                <p className="font-semibold">Estamos hablando con {nombreEmpresa(caso.empresa)} por vos</p>
+                <p className="text-sm text-slate-600">
+                  Te vamos a avisar acá{caso.telefono_contacto ? " y por WhatsApp" : ""}. No cambiamos nada de tu plan sin
+                  tu confirmación.
+                </p>
+              </div>
+            </div>
+          )}
+          {analisis?.legible && <FormResultado id={caso.id} />}
         </section>
       )}
 
@@ -124,26 +150,6 @@ export default async function Caso({ params }: PageProps<"/panel/caso/[id]">) {
               </ul>
             )}
           </section>
-
-          {abierto && (
-            <section className="tarjeta space-y-3">
-              <h2 className="text-lg font-bold">¿Cómo seguimos?</h2>
-              {caso.estado === "analizado" && (
-                <form action={pedirGestion.bind(null, caso.id)}>
-                  <button className="btn-primario w-full">Gestionalo por mí (gratis)</button>
-                  <p className="mt-1 text-center text-xs text-slate-500">
-                    Contactamos a {nombreEmpresa(caso.empresa)} en tu nombre. Te avisamos antes de aceptar cualquier cambio.
-                  </p>
-                </form>
-              )}
-              {caso.estado === "en_negociacion" && (
-                <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900">
-                  Estamos gestionando tu caso. Te vamos a avisar acá{caso.telefono_contacto ? " y por WhatsApp" : ""}.
-                </p>
-              )}
-              <FormResultado id={caso.id} />
-            </section>
-          )}
 
           <details className="tarjeta" open={caso.estado === "analizado"}>
             <summary className="cursor-pointer text-lg font-bold">Hacelo vos: guion para llamar o chatear</summary>

@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
-import { analizarFactura } from "@/lib/analisis";
+import { analizarFactura, iaHabilitada } from "@/lib/analisis";
 import { nombreEmpresa, SERVICIOS, type Servicio } from "@/lib/datos";
 import { crearClienteAdmin, crearClienteServidor } from "@/lib/supabase/server";
 
@@ -16,6 +16,7 @@ const MIME_POR_EXTENSION: Record<string, string> = {
 
 export async function POST(_req: Request, ctx: RouteContext<"/api/casos/[id]/analizar">) {
   const { id } = await ctx.params;
+  if (!iaHabilitada()) return NextResponse.json({ error: "Análisis automático desactivado" }, { status: 503 });
 
   // Con el cliente del usuario: RLS garantiza que el caso sea suyo.
   const supabase = await crearClienteServidor();
