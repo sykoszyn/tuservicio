@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 font-semibold transition disabled:cursor-not-allowed disabled:opacity-50;
+}
+@utility btn-primario {
+  @apply btn bg-emerald-600 text-white hover:bg-emerald-700 active:scale-[.98];
+}
+@utility btn-secundario {
+  @apply btn border border-slate-300 bg-white text-slate-800 hover:bg-slate-100;
+}
+@utility input {
+  @apply w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200;
+}
+@utility label {
+  @apply mb-1 block text-sm font-medium text-slate-700;
+}
+@utility tarjeta {
+  @apply rounded-2xl border border-slate-200 bg-white p-5 shadow-sm;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased;
+}
