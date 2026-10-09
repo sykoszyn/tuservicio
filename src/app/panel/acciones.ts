@@ -1,9 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { z } from "zod";
 import { iaHabilitada } from "@/lib/analisis";
-import { EMPRESAS } from "@/lib/datos";
+import { EMPRESAS, nombreEmpresa, pesos, SERVICIOS } from "@/lib/datos";
+import { avisarAdmin, urlBase } from "@/lib/email";
 import { crearClienteAdmin, requerirUsuario } from "@/lib/supabase/server";
 
 const NuevoCaso = z.object({
@@ -52,6 +54,21 @@ export async function crearCaso(datos: z.input<typeof NuevoCaso>): Promise<Resul
     .from("perfiles")
     .update({ dni: caso.dni_titular, telefono: caso.telefono_contacto || null })
     .eq("id", user.id);
+
+  const link = `${await urlBase()}/admin/caso/${data.id}`;
+  after(() =>
+    avisarAdmin(
+      `Nueva factura: ${nombreEmpresa(caso.empresa)} · ${caso.titular}`,
+      [
+        ["Empresa", nombreEmpresa(caso.empresa)],
+        ["Servicio", SERVICIOS[caso.servicio]],
+        ["Titular", caso.titular],
+        ["N° cliente", caso.numero_cliente],
+        ["WhatsApp", caso.telefono_contacto || "—"],
+      ],
+      link,
+    ),
+  );
 
   revalidatePath("/panel");
   return { ok: true, id: data.id };
@@ -111,6 +128,10 @@ export async function informarResultado(id: string, montoNuevo: number | null) {
 export async function declararAporte(id: string, monto: number) {
   const { supabase, user } = await requerirUsuario();
   if (!(monto > 0)) return;
-  await supabase.from("aportes").insert({ caso_id: id, user_id: user.id, monto });
+  const { error } = await supabase.from("aportes").insert({ caso_id: id, user_id: user.id, monto });
+  if (!error) {
+    const link = `${await urlBase()}/admin/caso/${id}`;
+    after(() => avisarAdmin(`Aporte voluntario declarado: ${pesos(monto)}`, [["Monto", pesos(monto)]], link));
+  }
   revalidatePath(`/panel/caso/${id}`);
 }

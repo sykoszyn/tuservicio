@@ -97,12 +97,16 @@ export function AporteVoluntario({
   ahorroMensual,
   mpLink,
   mpAlias,
+  mpCvu,
+  mpTitular,
   yaAporto,
 }: {
   id: string;
   ahorroMensual: number;
-  mpLink?: string;
-  mpAlias?: string;
+  mpLink: string | null;
+  mpAlias: string | null;
+  mpCvu: string | null;
+  mpTitular: string | null;
   yaAporto: boolean;
 }) {
   const [respuesta, setRespuesta] = useState<"" | "aporte" | "no">(yaAporto ? "aporte" : "");
@@ -141,10 +145,21 @@ export function AporteVoluntario({
         />
       </div>
       {mpAlias && (
-        <p className="text-sm text-slate-600">
-          Transferí al alias <strong className="select-all">{mpAlias}</strong>
-          {mpLink && " o usá el link de Mercado Pago."}
-        </p>
+        <div className="rounded-xl bg-slate-50 p-4 text-sm">
+          <p className="mb-2 text-slate-600">Transferí desde cualquier banco o billetera:</p>
+          <div className="flex items-center justify-between gap-2">
+            <p>
+              Alias: <strong className="select-all text-base">{mpAlias}</strong>
+            </p>
+            <Copiar texto={mpAlias} />
+          </div>
+          {mpCvu && (
+            <p className="mt-1">
+              CVU: <span className="select-all font-mono">{mpCvu}</span>
+            </p>
+          )}
+          {mpTitular && <p className="mt-1 text-slate-500">A nombre de {mpTitular}</p>}
+        </div>
       )}
       <div className="flex flex-col gap-2 sm:flex-row">
         {mpLink && (

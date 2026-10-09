@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { ESTADOS, type Estado } from "@/lib/datos";
+import { obtenerConfig } from "@/lib/config";
+import { enviarEmail } from "@/lib/email";
 import { requerirAdmin } from "@/lib/supabase/server";
 
 const monto = z.preprocess(
@@ -44,4 +46,42 @@ export async function confirmarAporte(aporteId: string, casoId: string) {
   const { supabase } = await requerirAdmin();
   await supabase.from("aportes").update({ confirmado: true }).eq("id", aporteId);
   revalidatePath(`/admin/caso/${casoId}`);
+}
+
+const Configuracion = z.object({
+  email_avisos: z.union([z.literal(""), z.email("Email inválido")]).transform((s) => s || null),
+  mp_alias: z.string().trim().max(60).transform((s) => s || null),
+  mp_cvu: z
+    .string()
+    .transform((s) => s.replace(/\D/g, ""))
+    .pipe(z.union([z.literal(""), z.string().length(22, "El CVU tiene 22 números")]))
+    .transform((s) => s || null),
+  mp_titular: z.string().trim().max(120).transform((s) => s || null),
+  mp_link: z
+    .union([z.literal(""), z.url({ protocol: /^https$/, error: "El link tiene que empezar con https://" })])
+    .transform((s) => s || null),
+});
+
+export type EstadoForm = { ok?: string; error?: string };
+
+export async function guardarConfiguracion(_prev: EstadoForm, form: FormData): Promise<EstadoForm> {
+  const { supabase } = await requerirAdmin();
+  const r = Configuracion.safeParse(Object.fromEntries(form));
+  if (!r.success) return { error: r.error.issues[0].message };
+  const { error } = await supabase.from("configuracion").update(r.data).eq("id", 1);
+  if (error) return { error: "No se pudo guardar. ¿Ejecutaste la migración 0002_configuracion.sql?" };
+  revalidatePath("/admin/configuracion");
+  return { ok: "Guardado." };
+}
+
+export async function probarEmail(_prev: EstadoForm): Promise<EstadoForm> {
+  await requerirAdmin();
+  const { email_avisos } = await obtenerConfig();
+  if (!email_avisos) return { error: "Primero guardá un email de avisos." };
+  const error = await enviarEmail(
+    email_avisos,
+    "Prueba de avisos de TuServicio",
+    "<p>¡Funciona! Vas a recibir un email como este cada vez que alguien suba una factura.</p>",
+  );
+  return error ? { error } : { ok: `Email de prueba enviado a ${email_avisos}. Revisá también spam.` };
 }

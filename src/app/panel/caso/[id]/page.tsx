@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { iaHabilitada, type Analisis } from "@/lib/analisis";
 import { EMPRESAS, ESTADOS, nombreEmpresa, pesos, SERVICIOS, type Empresa, type Estado, type Servicio } from "@/lib/datos";
+import { obtenerConfig } from "@/lib/config";
 import { requerirUsuario } from "@/lib/supabase/server";
 import { cancelarCaso, pedirGestion } from "../../acciones";
 import { AporteVoluntario, AutoAnalizar, Copiar, FormResultado } from "./interactivos";
@@ -26,6 +27,7 @@ export default async function Caso({ params }: PageProps<"/panel/caso/[id]">) {
   ]);
   if (!caso) notFound();
 
+  const config = await obtenerConfig();
   const { data: firmado } = await supabase.storage.from("facturas").createSignedUrl(caso.archivo_path, 600);
   const estado = ESTADOS[caso.estado as Estado];
   const analisis = caso.analisis as Analisis | null;
@@ -74,14 +76,16 @@ export default async function Caso({ params }: PageProps<"/panel/caso/[id]">) {
         </div>
       )}
 
-      {caso.estado === "ahorro_conseguido" && ahorro > 0 && (process.env.NEXT_PUBLIC_MP_LINK || process.env.NEXT_PUBLIC_MP_ALIAS) && (
+      {caso.estado === "ahorro_conseguido" && ahorro > 0 && (config.mp_alias || config.mp_link) && (
         <section className="tarjeta">
           <h2 className="mb-2 text-lg font-bold">¿Querés bancar el proyecto?</h2>
           <AporteVoluntario
             id={caso.id}
             ahorroMensual={ahorro}
-            mpLink={process.env.NEXT_PUBLIC_MP_LINK}
-            mpAlias={process.env.NEXT_PUBLIC_MP_ALIAS}
+            mpLink={config.mp_link}
+            mpAlias={config.mp_alias}
+            mpCvu={config.mp_cvu}
+            mpTitular={config.mp_titular}
             yaAporto={!!aportes?.length}
           />
         </section>

@@ -35,6 +35,19 @@ Plataforma para bajar facturas de internet, TV y celular en Argentina (Telecentr
    where id = (select id from auth.users where email = 'vos@mail.com');
    ```
    El panel de gestión queda en `/admin`.
+6. **Configuración** (`/admin/configuracion`): tu email para avisos y el alias/CVU para aportes.
+   Ejecutá antes `supabase/migrations/0002_configuracion.sql`.
+
+## Avisos por email (Resend)
+
+1. Creá una cuenta gratis en https://resend.com **con el mismo email donde querés recibir los avisos**.
+2. *API Keys → Create API Key* (permiso "Sending access"). Copiala.
+3. En Vercel: *Settings → Environment Variables* → `RESEND_API_KEY` = la clave → *Redeploy*.
+4. En `/admin/configuracion` cargá ese email, guardá y tocá "Enviar email de prueba".
+
+Sin dominio propio, Resend usa el remitente `onboarding@resend.dev` y **solo puede mandar al email con el que
+creaste la cuenta**, que es justo lo que necesitás para los avisos. Si después tenés dominio, verificalo en Resend
+y poné `EMAIL_REMITENTE`.
 
 ## Seguridad y datos
 
