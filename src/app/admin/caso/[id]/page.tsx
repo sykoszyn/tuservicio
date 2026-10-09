@@ -128,7 +128,7 @@ Antes quería saber qué promoción o plan más económico me pueden ofrecer par
           <ul className="space-y-1">
             {eventos?.map((e) => (
               <li key={e.id}>
-                <span className="text-slate-400">{new Date(e.created_at).toLocaleString("es-AR")}</span> ·{" "}
+                <span className="text-slate-400">{new Date(e.created_at).toLocaleString("es-AR", { timeZone: "America/Argentina/Buenos_Aires" })}</span> ·{" "}
                 {ESTADOS[e.estado as Estado]?.texto ?? e.estado} — {e.mensaje}
               </li>
             ))}
@@ -140,7 +140,7 @@ Antes quería saber qué promoción o plan más económico me pueden ofrecer par
           <ul className="space-y-2">
             {aportes?.map((a) => (
               <li key={a.id} className="flex items-center justify-between">
-                <span>{pesos(a.monto)} · {new Date(a.created_at).toLocaleDateString("es-AR")}</span>
+                <span>{pesos(a.monto)} · {new Date(a.created_at).toLocaleDateString("es-AR", { timeZone: "America/Argentina/Buenos_Aires" })}</span>
                 {a.confirmado ? (
                   <span className="text-emerald-700">Confirmado</span>
                 ) : (

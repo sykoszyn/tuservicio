@@ -186,7 +186,7 @@ export default async function Caso({ params }: PageProps<"/panel/caso/[id]">) {
               <li key={e.id} className="relative">
                 <span className="absolute -left-[23px] top-1.5 h-3 w-3 rounded-full bg-emerald-500" />
                 <p className="text-sm">{e.mensaje}</p>
-                <p className="text-xs text-slate-400">{new Date(e.created_at).toLocaleString("es-AR")}</p>
+                <p className="text-xs text-slate-400">{new Date(e.created_at).toLocaleString("es-AR", { timeZone: "America/Argentina/Buenos_Aires" })}</p>
               </li>
             ))}
           </ol>

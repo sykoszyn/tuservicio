@@ -55,7 +55,7 @@ export default async function Admin({ searchParams }: PageProps<"/admin">) {
           <tbody>
             {casos?.map((c) => (
               <tr key={c.id} className="border-t border-slate-100 hover:bg-slate-50">
-                <td className="p-3 whitespace-nowrap">{new Date(c.created_at).toLocaleDateString("es-AR")}</td>
+                <td className="p-3 whitespace-nowrap">{new Date(c.created_at).toLocaleDateString("es-AR", { timeZone: "America/Argentina/Buenos_Aires" })}</td>
                 <td className="p-3"><Link href={`/admin/caso/${c.id}`} className="font-medium text-emerald-700 underline">{c.titular}</Link>{c.autoriza_gestion && " ✋"}</td>
                 <td className="p-3">{nombreEmpresa(c.empresa)} · {SERVICIOS[c.servicio as Servicio]}</td>
                 <td className="p-3 whitespace-nowrap">{pesos(c.monto_actual)}{c.monto_nuevo ? ` → ${pesos(c.monto_nuevo)}` : ""}</td>

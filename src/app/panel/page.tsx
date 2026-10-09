@@ -53,7 +53,7 @@ export default async function Panel() {
                       {nombreEmpresa(c.empresa)} · {SERVICIOS[c.servicio as Servicio]}
                     </p>
                     <p className="text-sm text-slate-500">
-                      {new Date(c.created_at).toLocaleDateString("es-AR")}
+                      {new Date(c.created_at).toLocaleDateString("es-AR", { timeZone: "America/Argentina/Buenos_Aires" })}
                       {c.monto_actual ? ` · ${pesos(c.monto_actual)}` : ""}
                       {c.monto_nuevo ? ` → ${pesos(c.monto_nuevo)}` : ""}
                     </p>
