@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import "./globals.css";
+import MenuUsuario from "@/components/menu-usuario";
 import { crearClienteServidor } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
@@ -14,6 +15,9 @@ export const viewport: Viewport = { themeColor: "#059669" };
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const supabase = await crearClienteServidor();
   const { data } = await supabase.auth.getUser();
+  const { data: perfil } = data.user
+    ? await supabase.from("perfiles").select("nombre, es_admin").eq("id", data.user.id).maybeSingle()
+    : { data: null };
 
   return (
     <html lang="es-AR">
@@ -24,14 +28,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               Tu<span className="text-emerald-600">Servicio</span>
             </Link>
             {data.user ? (
-              <div className="flex items-center gap-3 text-sm">
-                <Link href="/panel" className="font-medium hover:text-emerald-700">
-                  Mis facturas
-                </Link>
-                <form action="/auth/salir" method="post">
-                  <button className="text-slate-500 hover:text-slate-800">Salir</button>
-                </form>
-              </div>
+              <MenuUsuario
+                email={data.user.email ?? ""}
+                nombre={perfil?.nombre ?? null}
+                esAdmin={!!perfil?.es_admin}
+                foto={(data.user.user_metadata?.avatar_url as string | undefined) ?? null}
+              />
             ) : (
               <Link href="/login" className="text-sm font-medium hover:text-emerald-700">
                 Ingresar
