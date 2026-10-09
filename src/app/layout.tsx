@@ -43,6 +43,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <footer className="mx-auto max-w-4xl px-4 py-10 text-center text-xs text-slate-500">
           TuServicio no está asociado a ninguna de las empresas mencionadas. Tus datos se usan solo para gestionar tu
           factura (Ley 25.326).
+          <span className="mt-2 flex justify-center gap-4">
+            <Link href="/privacidad" className="underline">Privacidad</Link>
+            <Link href="/terminos" className="underline">Condiciones</Link>
+          </span>
         </footer>
       </body>
     </html>
