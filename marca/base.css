@@ -1,0 +1,11 @@
+*{box-sizing:border-box}
+html,body{margin:0;width:1600px;height:900px;overflow:hidden}
+body{font-family:Inter,sans-serif;color:#fff;position:relative;
+ background:radial-gradient(circle at 88% 12%,#10b981 0,transparent 42%),linear-gradient(135deg,#064e3b 0%,#047857 55%,#059669 100%)}
+.marca{position:absolute;left:90px;bottom:70px;display:flex;align-items:center;gap:16px}
+.marca svg{width:56px;height:56px}
+.marca b{font-family:"Inter Display",Inter;font-weight:800;font-size:38px;letter-spacing:-1px}
+.marca b span{color:#a7f3d0}
+.marca i{font-style:normal;font-size:15px;font-weight:800;letter-spacing:2px;background:#ede9fe;color:#6d28d9;padding:5px 10px;border-radius:8px}
+h1{font-family:"Inter Display",Inter;font-weight:800;letter-spacing:-2.5px;margin:0}
+h1 em{font-style:normal;color:#a7f3d0}
