@@ -1,0 +1,7 @@
+*{box-sizing:border-box}
+html,body{margin:0;width:1080px;height:1920px;overflow:hidden}
+body{font-family:Inter,sans-serif;color:#fff;position:relative;
+ background:radial-gradient(circle at 85% 8%,#10b981 0,transparent 40%),linear-gradient(160deg,#064e3b 0%,#047857 55%,#059669 100%)}
+h1{font-family:"Inter Display",Inter;font-weight:800;letter-spacing:-3px;font-size:104px;line-height:1.02;margin:0;position:absolute;left:80px;right:80px;top:150px}
+h1 em{font-style:normal;color:#a7f3d0}
+.sub{position:absolute;left:80px;right:80px;font-size:40px;line-height:1.35;color:#d1fae5;font-weight:500}
