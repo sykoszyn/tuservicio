@@ -10,11 +10,13 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.132.1",
+    "@lemoncash/mini-app-sdk": "^0.1.16",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.3",
     "next": "^16.4.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
+    "viem": "^2.57.4",
     "zod": "^4.6.5"
   },
   "devDependencies": {

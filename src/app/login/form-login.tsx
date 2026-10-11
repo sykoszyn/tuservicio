@@ -1,14 +1,64 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { estaEnLemon, ingresarConLemon } from "@/lib/lemon-cliente";
 import { crearClienteNavegador } from "@/lib/supabase/client";
 
 export default function FormLogin() {
   const params = useSearchParams();
+  const router = useRouter();
   const volver = params.get("volver") ?? "/panel";
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState(params.get("error") ? "No pudimos completar el ingreso. Probá de nuevo." : "");
+  // null = todavía no sabemos si estamos dentro de Lemon
+  const [lemon, setLemon] = useState<boolean | null>(null);
+
+  async function conLemon() {
+    setCargando(true);
+    setError("");
+    const r = await ingresarConLemon();
+    if (r.ok) {
+      try {
+        sessionStorage.setItem("lemon-auth", "ok");
+      } catch {}
+      router.replace(volver.startsWith("/") && !volver.startsWith("//") ? volver : "/panel");
+      router.refresh();
+      return;
+    }
+    setCargando(false);
+    setError(r.error);
+  }
+
+  useEffect(() => {
+    estaEnLemon().then((enLemon) => {
+      setLemon(enLemon);
+      if (enLemon) conLemon();
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (lemon === null)
+    return <div className="tarjeta h-32 animate-pulse" aria-busy="true" />;
+
+  if (lemon)
+    return (
+      <div className="tarjeta space-y-4 text-center">
+        {cargando ? (
+          <>
+            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-emerald-200 border-t-emerald-600" />
+            <p className="font-medium">Ingresando con tu cuenta de Lemon…</p>
+          </>
+        ) : (
+          <>
+            {error && <p className="rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{error}</p>}
+            <button type="button" onClick={conLemon} className="btn-primario w-full py-4 text-base">
+              🍋 Ingresar con Lemon
+            </button>
+          </>
+        )}
+      </div>
+    );
 
   async function conGoogle() {
     setCargando(true);

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import "./globals.css";
+import LemonAuth from "@/components/lemon-auth";
 import MenuUsuario from "@/components/menu-usuario";
 import { ES_BETA } from "@/lib/datos";
 import { obtenerPerfil, obtenerUsuario } from "@/lib/supabase/server";
@@ -20,6 +21,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="es-AR">
       <body className="min-h-dvh">
+        <LemonAuth />
         <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 backdrop-blur">
           <nav className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
             <Link href="/" className="flex items-center gap-2 text-lg font-bold">
@@ -34,7 +36,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </Link>
             {usuario ? (
               <MenuUsuario
-                email={usuario.email ?? ""}
+                email={
+                  usuario.app_metadata.provider === "lemon"
+                    ? (usuario.user_metadata.lemontag ? String(usuario.user_metadata.lemontag) : "Cuenta de Lemon")
+                    : (usuario.email ?? "")
+                }
                 nombre={perfil?.nombre ?? null}
                 esAdmin={!!perfil?.es_admin}
                 foto={(usuario.user_metadata.avatar_url as string | undefined) ?? null}

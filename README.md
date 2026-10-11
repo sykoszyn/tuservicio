@@ -51,6 +51,20 @@ Plataforma para bajar facturas de internet, TV y celular en Argentina (Telecentr
 Como el ingreso es solo con Google, en Supabase → Authentication → Sign In / Providers conviene **desactivar
 "Email"** para que nadie pueda crear cuentas con email y contraseña por fuera de la app.
 
+## Mini App de Lemon
+
+Dentro de la app de Lemon no se puede usar Google: Lemon exige su propio ingreso (`authenticate`, firma SIWE).
+La app lo detecta sola (`isLemonWebView`) y en ese caso ingresa con Lemon; fuera de Lemon sigue con Google.
+
+1. Ejecutá `supabase/migrations/0005_lemon.sql`.
+2. En Supabase → Authentication → Sign In / Providers, **Email tiene que estar activado** (la sesión de Lemon
+   se abre con un link de ingreso generado en el servidor). La página no muestra ingreso por email.
+3. Mientras la Mini App está en desarrollo usa testnet (Polygon Amoy). Al publicarla, agregá
+   `NEXT_PUBLIC_LEMON_RED=polygon` en Vercel y hacé Redeploy.
+
+Cada billetera de Lemon es una cuenta propia (con un email interno `<billetera>@lemon.tuservicio.app`); el nombre,
+email y lemontag que comparte la persona quedan en sus datos.
+
 ## Ajustes rápidos
 
 En `src/lib/datos.ts`:

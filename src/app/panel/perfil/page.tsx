@@ -5,7 +5,7 @@ import FormPerfil from "./form-perfil";
 
 export const metadata = { title: "Mi perfil — TuServicio" };
 
-const PROVEEDOR: Record<string, string> = { google: "Google", email: "Email y contraseña" };
+const PROVEEDOR: Record<string, string> = { google: "Google", email: "Email y contraseña", lemon: "Lemon" };
 
 export default async function MiPerfil() {
   const { supabase, user } = await requerirUsuario();
@@ -23,7 +23,10 @@ export default async function MiPerfil() {
     .filter((c) => c.estado === "ahorro_conseguido" && c.monto_actual && c.monto_nuevo)
     .reduce((s, c) => s + (c.monto_actual - c.monto_nuevo), 0);
   const foto = user.user_metadata.avatar_url as string | undefined;
-  const nombre = perfil?.nombre || user.email;
+  const esLemon = user.app_metadata.provider === "lemon";
+  const lemontag = user.user_metadata.lemontag as string | undefined;
+  const emailVisible = esLemon ? (lemontag ?? "Cuenta de Lemon") : user.email;
+  const nombre = perfil?.nombre || emailVisible;
 
   return (
     <div className="mx-auto max-w-xl space-y-5">
@@ -40,7 +43,7 @@ export default async function MiPerfil() {
         )}
         <div className="min-w-0">
           <p className="truncate text-lg font-semibold">{nombre}</p>
-          <p className="truncate text-sm text-slate-500">{user.email}</p>
+          <p className="truncate text-sm text-slate-500">{emailVisible}</p>
           <div className="mt-1 flex flex-wrap gap-2 text-xs">
             <span
               className={`rounded-full px-2 py-0.5 font-semibold ${
